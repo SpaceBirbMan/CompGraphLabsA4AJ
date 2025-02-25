@@ -3,25 +3,28 @@ package stud.a4a.a4aj.labs;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import stud.a4a.a4aj.Visuals;
 
 public class Lab1Tab extends Tab {
 
-    private GridPane canvas;
-    private double[] line1 = {1, 1, 30, 20};  // Линия Брезенхема
-    private double[] line2 = {1, 5, 30, 24}; // Линия ЦДА
-    private Pane content = new Pane();
-    private Pane contentU = new Pane();
+    private final GridPane canvas;
+    private final double[] line1 = {1, 1, 30, 20};  // Линия Брезенхема
+    private final double[] line2 = {1, 5, 30, 24}; // Линия ЦДА
 
     public Lab1Tab() {
         super("Полоски");
 
         this.setClosable(false);
-        setupCanvas();
+        canvas = Visuals.setupCanvas();
+        drawLines();
+        Pane content = new Pane();
         setupControls(content);
         setContent(content);
         canvas.setGridLinesVisible(true);
+        Pane contentU = new Pane();
         content.getChildren().add(contentU);
         contentU.toFront();
+        content.getChildren().addAll(canvas);
     }
 
     /// Установка ввода координат
@@ -60,53 +63,22 @@ public class Lab1Tab extends Tab {
         scrollBox.setLayoutX(420);
         scrollBox.setLayoutY(10);
 
-        content.getChildren().addAll(canvas, scrollBox);
-    }
-
-    /// Окраска границ сетки, визуальный сахар
-    private void drawGrid() {
-        for (int i = 0; i < 35; i++) {
-            for (int j = 0; j < 30; j++) {
-                Pane cell = new Pane();
-                cell.setStyle("-fx-border-color: black; -fx-border-width: 0.5;");
-                cell.setMinSize(10, 10);
-                cell.setMaxSize(10, 10);
-                canvas.add(cell, i, j);
-            }
-        }
+        content.getChildren().addAll(scrollBox);
     }
 
     /// Рисование линий
     private void drawLines() {
         canvas.getChildren().clear(); // Очистка перед отрисовкой
-        drawGrid(); // Восстановление сетки
+        Visuals.drawGrid(canvas); // Восстановление сетки
 
         drawBresenhamLine((int) line1[0], (int) line1[1], (int) line1[2], (int) line1[3], Color.RED);
         drawDDALine(line2[0], line2[1], line2[2], line2[3], Color.GREEN);
     }
 
-    /// Настройка "холста"
-    private void setupCanvas() {
-        canvas = new GridPane();
-
-        for (int i = 0; i < 35; i++) {
-            ColumnConstraints cc = new ColumnConstraints(10); // Фиксируем размер ячеек
-            canvas.getColumnConstraints().add(cc);
-        }
-        for (int j = 0; j < 30; j++) {
-            RowConstraints rc = new RowConstraints(10); // Фиксируем размер ячеек
-            canvas.getRowConstraints().add(rc);
-        }
-
-        drawLines();
-        canvas.setLayoutX(10);
-        canvas.setLayoutY(10);
-    }
-
     /// Вставляет цветной квадрат в клетку
     private Pane drawPixel(int x, int y, Color color) {
         Pane pixel = new Pane();
-        pixel.setStyle("-fx-background-color: " + toRgbString(color) + ";");
+        pixel.setStyle("-fx-background-color: " + Visuals.toRgbString(color) + ";");
         pixel.setMinSize(10, 10);
         pixel.setMaxSize(10, 10);
 
@@ -176,13 +148,6 @@ public class Lab1Tab extends Tab {
             x += xInc;
             y += yInc;
         }
-    }
-
-    private String toRgbString(Color color) {
-        return String.format("rgb(%d, %d, %d)",
-                (int) (color.getRed() * 255),
-                (int) (color.getGreen() * 255),
-                (int) (color.getBlue() * 255));
     }
 
 }

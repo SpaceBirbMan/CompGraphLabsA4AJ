@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.Pane;
 import stud.a4a.a4aj.labs.Lab1Tab;
+import stud.a4a.a4aj.labs.Lab2Tab;
 
 public class HelloController {
 
@@ -17,6 +18,6 @@ public class HelloController {
     }
 
     private void addLabTabs() {
-        labs.getTabs().add(new Lab1Tab());
+        labs.getTabs().addAll(new Lab1Tab(), new Lab2Tab());
     }
 }
