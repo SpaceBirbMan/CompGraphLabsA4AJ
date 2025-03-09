@@ -3,10 +3,7 @@ package stud.a4a.a4aj;
 import javafx.fxml.FXML;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.Pane;
-import stud.a4a.a4aj.labs.Lab1Tab;
-import stud.a4a.a4aj.labs.Lab2Tab;
-import stud.a4a.a4aj.labs.Lab3Tab;
-import stud.a4a.a4aj.labs.Lab4Tab;
+import stud.a4a.a4aj.labs.*;
 
 public class HelloController {
 
@@ -20,6 +17,13 @@ public class HelloController {
     }
 
     private void addLabTabs() {
-        labs.getTabs().addAll(new Lab1Tab(), new Lab2Tab(), new Lab3Tab(), new Lab4Tab());
+        labs.getTabs().addAll(
+                new Lab1Tab(),
+                new Lab2Tab(),
+                new Lab3Tab(),
+                new Lab4Tab(),
+                new Lab5Tab(),
+                new Lab6Tab()
+        );
     }
 }
