@@ -23,7 +23,9 @@ public class HelloController {
                 new Lab3Tab(),
                 new Lab4Tab(),
                 new Lab5Tab(),
-                new Lab6Tab()
+                new Lab6Tab(),
+                new Lab7Tab(),
+                new LabRGBTab()
         );
     }
 }

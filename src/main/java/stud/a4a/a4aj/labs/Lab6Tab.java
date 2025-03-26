@@ -175,9 +175,7 @@ public class Lab6Tab extends Tab {
                 stack.push(new int[]{x, y + 1});
                 stack.push(new int[]{x, y - 1});
 
-                // Добавляем задержку для анимации
                 timeline.getKeyFrames().add(new KeyFrame(Duration.millis(1000 * stack.size()), e -> {
-                    // Обновляем UI
                 }));
             }
         }

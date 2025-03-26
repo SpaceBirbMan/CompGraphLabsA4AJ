@@ -43,6 +43,7 @@ public class Lab3Tab extends Tab {
     private double prevPivotY;
 
     ArrayList<Double> fdot = new ArrayList();
+    int[] dots = {0};
 
     Polyline polyline = new Polyline();
     boolean isFirst = true;
@@ -52,6 +53,9 @@ public class Lab3Tab extends Tab {
 
         pane.setLayoutX(0);
         pane.setLayoutY(0);
+
+        TextField dotsField = new TextField();
+        dotsField.setOnAction(event -> { if (dotsField.getText().matches("[0-9]+")) dots[0] = Integer.parseInt(dotsField.getText());});
 
         pane.setMaxSize(300, 300);
         pane.setPrefSize(300, 300);
@@ -72,11 +76,11 @@ public class Lab3Tab extends Tab {
                 System.out.println(polyline.getPoints().size());
                 isFirst = false;
             }
-            if (polyline.getPoints().size() == 6) {
+            if (polyline.getPoints().size() == dots[0] * 2) {
                 polyline.getPoints().addAll(fdot);
                 System.out.println(polyline.getPoints());
             }
-            else if (polyline.getPoints().size() >= 8) {
+            else if (polyline.getPoints().size() >= dots[0]*2+2) {
                 pane.getChildren().remove(polyline);
                 fdot.clear();
                 polyline.getPoints().clear();
@@ -130,7 +134,7 @@ public class Lab3Tab extends Tab {
         VBox vBox = new VBox(angleField, speedField, label, dotX, dotY, button);
         this.setClosable(false);
 
-        Pane imagePane = new Pane(pane, pivotPoint, startPoint, endPoint, startLine, endLine);
+        Pane imagePane = new Pane(pane, pivotPoint, startPoint, endPoint, startLine, endLine, dotsField);
         HBox content = new HBox(imagePane, vBox);
         this.setContent(content);
 
