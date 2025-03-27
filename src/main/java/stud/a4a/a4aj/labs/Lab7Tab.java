@@ -18,7 +18,7 @@ public class Lab7Tab extends Tab {
     private Line currentLine = null;
 
     public Lab7Tab() {
-        super("Lab 7 - Отсечение");
+        super("CutThe...");
         canvas = new Canvas(800, 600);
         setContent(canvas);
 
