@@ -2,11 +2,9 @@ package stud.a4a.a4aj.labs;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -18,7 +16,7 @@ import java.util.Stack;
 
 public class Lab6Tab extends Tab {
 
-    private static final int GRID_SIZE = 200;
+    private static final int GRID_SIZE = 400;
     private static final int PIXEL_SIZE = 5;
     private static final int GRID_CELLS = GRID_SIZE / PIXEL_SIZE;
 
@@ -28,11 +26,12 @@ public class Lab6Tab extends Tab {
     private Button fill8Button;
     private Button clearButton;
     private Button buildButton;
-    private TextField x1Field, y1Field, x2Field, y2Field, x3Field, y3Field, x4Field, y4Field;
-    private TextField fillXField, fillYField;
+    private Button finishButton;
+    private List<int[]> vertices = new ArrayList<>();
+    private Label statusLabel;
 
     public Lab6Tab() {
-        setText("Неквадрат");
+        setText("Заполнение многоугольников");
 
         gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
@@ -40,48 +39,48 @@ public class Lab6Tab extends Tab {
 
         initializeGrid();
 
-        x1Field = new TextField();
-        y1Field = new TextField();
-        x2Field = new TextField();
-        y2Field = new TextField();
-        x3Field = new TextField();
-        y3Field = new TextField();
-        x4Field = new TextField();
-        y4Field = new TextField();
-
-        fillXField = new TextField();
-        fillYField = new TextField();
-
-        buildButton = new Button("Build Quadrilateral");
-        buildButton.setOnAction(e -> buildQuadrilateral());
-
-        fill4Button = new Button("Fill (4-connected)");
+        // Инициализация элементов управления
+        fill4Button = new Button("Заливка (4-связная)");
         fill4Button.setOnAction(e -> {
-            int x = Integer.parseInt(fillXField.getText()) / PIXEL_SIZE;
-            int y = Integer.parseInt(fillYField.getText()) / PIXEL_SIZE;
-            floodFill4(x, y, Color.RED);
+            if (!vertices.isEmpty()) {
+                int[] centroid = calculateCentroid();
+                floodFill4(centroid[0], centroid[1], Color.RED);
+            }
         });
         fill4Button.setDisable(true);
 
-        fill8Button = new Button("Fill (8-connected)");
+        fill8Button = new Button("Заливка (8-связная)");
         fill8Button.setOnAction(e -> {
-            int x = Integer.parseInt(fillXField.getText()) / PIXEL_SIZE;
-            int y = Integer.parseInt(fillYField.getText()) / PIXEL_SIZE;
-            floodFill8(x, y, Color.BLUE);
+            if (!vertices.isEmpty()) {
+                int[] centroid = calculateCentroid();
+                floodFill8(centroid[0], centroid[1], Color.BLUE);
+            }
         });
         fill8Button.setDisable(true);
 
-        clearButton = new Button("Clear");
-        clearButton.setOnAction(e -> clearGrid());
+        clearButton = new Button("Очистить");
+        clearButton.setOnAction(e -> clearAll());
+
+        finishButton = new Button("Замкнуть многоугольник");
+        finishButton.setOnAction(e -> finishPolygon());
+        finishButton.setDisable(true);
+
+        statusLabel = new Label("Кликните на сетке, чтобы добавить вершины многоугольника");
+
+        // Обработка кликов мыши
+        gridPane.setOnMouseClicked(event -> {
+            int x = (int) (event.getX() / PIXEL_SIZE);
+            int y = (int) (event.getY() / PIXEL_SIZE);
+
+            if (x >= 0 && x < GRID_CELLS && y >= 0 && y < GRID_CELLS) {
+                addVertex(x, y);
+            }
+        });
 
         VBox vbox = new VBox(
-                new Label("Vertex 1 (x, y):"), new VBox(x1Field, y1Field),
-                new Label("Vertex 2 (x, y):"), new VBox(x2Field, y2Field),
-                new Label("Vertex 3 (x, y):"), new VBox(x3Field, y3Field),
-                new Label("Vertex 4 (x, y):"), new VBox(x4Field, y4Field),
-                buildButton,
-                new Label("Fill Point (x, y):"), new VBox(fillXField, fillYField),
-                fill4Button, fill8Button, clearButton, gridPane
+                statusLabel,
+                new HBox(finishButton, fill4Button, fill8Button, clearButton),
+                gridPane
         );
         setContent(vbox);
     }
@@ -99,25 +98,39 @@ public class Lab6Tab extends Tab {
         }
     }
 
-    private void buildQuadrilateral() {
+    private void addVertex(int x, int y) {
+        vertices.add(new int[]{x, y});
+        pixels.get(y).get(x).setFill(Color.BLACK);
+        statusLabel.setText("Вершин: " + vertices.size() + ". Кликните для добавления или нажмите 'Замкнуть'");
+        finishButton.setDisable(vertices.size() < 2);
+    }
+
+    private void finishPolygon() {
+        if (vertices.size() < 2) return;
+
         clearGrid();
 
-        int x1 = Integer.parseInt(x1Field.getText()) / PIXEL_SIZE;
-        int y1 = Integer.parseInt(y1Field.getText()) / PIXEL_SIZE;
-        int x2 = Integer.parseInt(x2Field.getText()) / PIXEL_SIZE;
-        int y2 = Integer.parseInt(y2Field.getText()) / PIXEL_SIZE;
-        int x3 = Integer.parseInt(x3Field.getText()) / PIXEL_SIZE;
-        int y3 = Integer.parseInt(y3Field.getText()) / PIXEL_SIZE;
-        int x4 = Integer.parseInt(x4Field.getText()) / PIXEL_SIZE;
-        int y4 = Integer.parseInt(y4Field.getText()) / PIXEL_SIZE;
-
-        drawLine(x1, y1, x2, y2);
-        drawLine(x2, y2, x3, y3);
-        drawLine(x3, y3, x4, y4);
-        drawLine(x4, y4, x1, y1);
+        // Рисуем многоугольник
+        for (int i = 0; i < vertices.size(); i++) {
+            int[] current = vertices.get(i);
+            int[] next = vertices.get((i + 1) % vertices.size());
+            drawLine(current[0], current[1], next[0], next[1]);
+        }
 
         fill4Button.setDisable(false);
         fill8Button.setDisable(false);
+        statusLabel.setText("Многоугольник замкнут. Вершин: " + vertices.size());
+    }
+
+    private int[] calculateCentroid() {
+        if (vertices.isEmpty()) return new int[]{0, 0};
+
+        double sumX = 0, sumY = 0;
+        for (int[] vertex : vertices) {
+            sumX += vertex[0];
+            sumY += vertex[1];
+        }
+        return new int[]{(int)(sumX / vertices.size()), (int)(sumY / vertices.size())};
     }
 
     private void drawLine(int x1, int y1, int x2, int y2) {
@@ -175,8 +188,7 @@ public class Lab6Tab extends Tab {
                 stack.push(new int[]{x, y + 1});
                 stack.push(new int[]{x, y - 1});
 
-                timeline.getKeyFrames().add(new KeyFrame(Duration.millis(1000 * stack.size()), e -> {
-                }));
+                timeline.getKeyFrames().add(new KeyFrame(Duration.millis(10 * stack.size()), e -> {}));
             }
         }
 
@@ -216,10 +228,7 @@ public class Lab6Tab extends Tab {
                 stack.push(new int[]{x + 1, y - 1});
                 stack.push(new int[]{x - 1, y + 1});
 
-                // Добавляем задержку для анимации
-                timeline.getKeyFrames().add(new KeyFrame(Duration.millis(10 * stack.size()), e -> {
-                    // Обновляем UI
-                }));
+                timeline.getKeyFrames().add(new KeyFrame(Duration.millis(10 * stack.size()), e -> {}));
             }
         }
 
@@ -229,8 +238,23 @@ public class Lab6Tab extends Tab {
     private void clearGrid() {
         for (int i = 0; i < GRID_CELLS; i++) {
             for (int j = 0; j < GRID_CELLS; j++) {
+                if (pixels.get(i).get(j).getFill() != Color.BLACK) {
+                    pixels.get(i).get(j).setFill(Color.WHITE);
+                }
+            }
+        }
+    }
+
+    private void clearAll() {
+        vertices.clear();
+        for (int i = 0; i < GRID_CELLS; i++) {
+            for (int j = 0; j < GRID_CELLS; j++) {
                 pixels.get(i).get(j).setFill(Color.WHITE);
             }
         }
+        fill4Button.setDisable(true);
+        fill8Button.setDisable(true);
+        finishButton.setDisable(true);
+        statusLabel.setText("Кликните на сетке, чтобы добавить вершины многоугольника");
     }
 }
